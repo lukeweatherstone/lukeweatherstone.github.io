@@ -1,22 +1,22 @@
 # --- Basic options --- #
 
 # Name of website
-title: My website
+title: Bending moments and batted balls
 
 # Short description of your site
-description: A virtual proof that I'm awesome
+description: My thoughts and musings on structural engineering and baseball
 
 # Your name to show in the footer
-author: Some Person
+author: Luke Weatherstone
 
 # --- List of links in the navigation bar --- #
 
 navbar-links:
   About Me: "aboutme"
-  Resources:
-    - Beautiful Jekyll: "https://beautifuljekyll.com"
-    - Learn markdown: "https://www.markdowntutorial.com/"
-  Author's home: "https://deanattali.com"
+  # Resources:
+    # - Beautiful Jekyll: "https://beautifuljekyll.com"
+    # - Learn markdown: "https://www.markdowntutorial.com/"
+  # Author's home: "https://deanattali.com"
 
 # --- Logo --- #
 
@@ -29,7 +29,7 @@ round-avatar: true
 
 # If you want to have an image logo in the top-left corner instead of the title text,
 # then specify the following parameter
-#title-img: /path/to/image
+title-img: /path/to/image
 
 
 # --- Footer options --- #
@@ -38,13 +38,13 @@ round-avatar: true
 # Uncomment the links you want to show and add your information to each one.
 # If you don't want to show a link to an RSS feed, set rss to "false".
 social-network-links:
-  email: "someone@example.com"
-  facebook: deanattali
-  github: daattali
-  twitter: daattali
+  email: "lukeweatherstone@fastmail.com"
+  # facebook: deanattali
+  github: lukeweatherstone
+  twitter: _weatherstone
   rss: true
 #  reddit: yourname
-#  linkedin: daattali
+  linkedin: lukeweatherstone
 #  xing: yourname
 #  stackoverflow: "3943160/daattali"
 #  snapchat: deanat78
@@ -72,7 +72,7 @@ share-links-active:
 
 # How to display the link to your website in the footer
 # Remove this if you don't want a link in the footer
-url-pretty: "MyWebsite.com"
+url-pretty: "lukeweatherstone.github.io"
 
 # Create a "tags" index page and make tags on each post clickable
 link-tags: true
@@ -123,7 +123,7 @@ footer-link-col: "#404040"
 # --- Comments --- #
 
 # To use Disqus comments, sign up to https://disqus.com and fill in your Disqus shortname (NOT the userid)
-#disqus: ""
+#disqus: "lukeweatherstone-github-io"
 
 # To use Facebook Comments, create a Facebook app and fill in the Facebook App ID
 #fb_comment_id: ""
