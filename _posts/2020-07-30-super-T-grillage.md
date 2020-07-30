@@ -78,6 +78,7 @@ That all makes sense in code, but really, a table would help us to visualise wha
 | Girder 5 | 9.749 |
 | Edge 2 | 10.804 |
 
+
 #### Longitudinal geometry
 Going back to my phone conversation from earlier, we need the span lengths.
 ~~~
@@ -88,10 +89,10 @@ L2 = 33         # length of span 2 in metres
 Now that we have the span lengths, we need to determine an appropriate spacing for the transverse grillage members. This part is trickier than before. Whereas previously we were modelling the **actual** positions of the girders, now we are idealising a continuous slab into a series of discrete beam elements.
 
 Fortunately, Hambly, in [his book _Bridge Deck Behaviour_][hambly] (affectionately referred to as "The Bible" by many of my colleagues) has some guidance for us:
-^ The spacing of transverse members should be sufficiently small for loads distributed along longitudinal members to be represented with reasonable accuracy by a number of point loads, i.e. spacing less than about 1/4 of the effective span. In regions of sudden change such as over an internal support, a closer spacing is necessary.
+> The spacing of transverse members should be sufficiently small for loads distributed along longitudinal members to be represented with reasonable accuracy by a number of point loads, i.e. spacing less than about 1/4 of the effective span. In regions of sudden change such as over an internal support, a closer spacing is necessary.
 
 He then goes on to say:
-^ The transverse and longitudinal member spacings should be reasonably similar to permit sensible statical distribution of loads.
+> The transverse and longitudinal member spacings should be reasonably similar to permit sensible statical distribution of loads.
 
 
 
