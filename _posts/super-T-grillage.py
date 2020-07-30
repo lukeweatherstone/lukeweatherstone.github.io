@@ -21,4 +21,13 @@ flange_sup = ((B_sup_total * 1000) - ((n_sup - 0.5) * gap)) / n_sup
 space_road = flange_road + gap
 space_sup = flange_sup + gap
 
-print(space_sup)
+print(flange_road, flange_sup)
+
+# for n in range(n_road + n_sup):
+#     n = n + 1
+#     if n == 1:
+#         edge1 = 0
+#     if n == (n_road + n_sup):
+#         edge2 = B_total
+    
+#     offset

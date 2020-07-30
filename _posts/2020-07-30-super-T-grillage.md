@@ -1,21 +1,25 @@
 ---
 layout: post
 title: Creating a Super T bridge grillage model
-subtitle: Each post also has a subtitle
+subtitle: A worked example of a two-span integral bridge
 gh-repo: lukeweatherstone
 gh-badge: [star, fork, follow]
-tags: [test]
+tags: [bridge design]
 comments: true
 ---
 In Australia, Super T girders are a popular choice for building bridges. A Super T is a precast, prestressed concrete girder which is then combined with a reinforced concrete deck slab to make a composite structure. Super "T"s are named after their shape (and I think we really like them, hence the "Super").
 
 I've been modelling a lot of Super T bridges lately so thought I'd collate my process in an article to solidify my understanding (you're welcome future Luke) and hopefully helping out any readers who are interested.
 
+### The example we're working with
+
 To illustrate this, I'll run through a recent example of a Super T road bridge. This particular bridge is two spans over a new roadway. The spans are similar length (although not exactly the same - we'll get to that).
 
 The abutments are reinforced concrete headstocks sitting on reinforced concrete piles. The pier is a blade wall and is made integral with the deck by way of a cast-in-situ stitch pour after the girders are placed and deck is cast.
 
 The bridge will carry two lanes of a local road and a shared path. The road will have one cross fall, the shared path will have another - they'll meet at the kerb. On each side, we'll have a precast Medium[^1] performance barrier with a stitch pour to tie it to the deck. It has zero skew.
+
+Because we're using Super Ts, and because we have an integral stitch pour, the construction staging is critical to the correct design of this bridge. Here, we're only looking at the actions on the bridge in its **final** configuration - that is, once it is open for design traffic. Other configurations will need to be considered separately.[^2]
 
 ### Setting up the grillage geometry
 #### Lateral geometry
@@ -94,8 +98,52 @@ Fortunately, Hambly, in [his book _Bridge Deck Behaviour_][hambly] (affectionate
 He then goes on to say:
 > The transverse and longitudinal member spacings should be reasonably similar to permit sensible statical distribution of loads.
 
+So basically our elements should have a spacing of less than about 7.5 m (0.25 * 30), be roughly equivalent to the longitudinal girder spacing (approximately 2.1 m) and have a closer spacing over regions of sudden change (our integral pier).
+
+We want numbers to the nearest mm for our spacings, so we'll go ahead and adopt the following:
+~~~
+sp_trans1 = 2               # transverse spacing of elements for span 1, in metres
+sp_trans2 = 2.2             # transverse spacing of elements for span 2, in metres
+
+n_trans1 = L1 / sp_trans1   # number of spaces created (should be an integer)
+n_trans2 = L2 / sp_trans2
+
+>>> n_trans1, n_trans2
+15, 15
+~~~
+
+We're not too concerned with the detail over the support, so we'll keep these spacings consistent for each of the spans.
+
+With the above properties in mind, we can now input the grillage elements to your finite element analysis program of choice. (For what it's worth, I'm using SPACE GASS here)
+![Plan view of grillage members](/assets/img/grillage_plan.png)
+
+A few things to note in the above. The green elements are the longitudinal members (our composite Super T girders). The blue elements are the transverse members (our slab). The pink elements are the edge of the deck - these will have a negligible stiffness, but we need them for load application. The red elements represent the cross girders and integral stitch.
+
+#### We're not quite done yet
+While we have all of our main elements input, we can be a little more exact and give this bridge some more capacity. To do this, we're going to add some stiff outriggers.
+
+We'll get to sizing the Super T girders shortly, but at the moment, our idealised cross section looks something like this:
+![Idealised grillage cross section - simple](/assets/img/grillage_cs_simple.png)
+
+The green circles are a beam element with properties for the composite girder. The blue lines are the transverse slab elements. The problem here is the slab. It's spanning between the girder centroid, but really, it is supported by the girder webs.
+
+Here we'll add our stiff outriggers, shown in orange:
 
 
 [^1]: **Medium** performance level barriers are the highest level typical barrier referenced in Australian Bridge codes (currently AS 5100-2017). These barriers apply to bridges over rail lines, major waterways and major roads. Essentially all the high-risk bridges that are accessible to the public. Bridge barriers for say, mining vehicles, would require a separate assessment and get the performance class **Special**.
+
+[^2]: For the sake of completeness, here's what I'm thinking the construction staging for this bridge would look like:  
+    1. Carry out excavations
+    2. Construct piled fondations
+    3. Construct pier foundation, pier blade wall, abutment headstock and wingwalls
+    4. Construct backfill and drainage system behind abutments to the underside of the approach slab level
+    5. Construct falsework towers for temporary girder support at pier
+    6. Erect girders onto bearings at abutments and temporary falsework towers/support brackets at pier
+    7. Cast cross girders at abutments
+    8. Cast main deck slab from abutment to within 2.5 m of pier centreline
+    9. Cast integral stitch over pier
+    10. Construct footway slab and kerb
+    11. Construct approach slab and barriers
+    12. Install approach pavements and surfacing on bridge deck
 
 [hambly]: https://www.amazon.com/Bridge-Deck-Behaviour-C-Hambly/dp/0419172602
