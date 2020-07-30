@@ -15,7 +15,7 @@ To illustrate this, I'll run through a recent example of a Super T road bridge. 
 
 The abutments are reinforced concrete headstocks sitting on reinforced concrete piles. The pier is a blade wall and is made integral with the deck by way of a cast-in-situ stitch pour after the girders are placed and deck is cast.
 
-The bridge will carry two lanes of a local road and a shared path. The road will have one cross fall, the shared path will have another - they'll meet at the kerb. On each side, we'll have a precast Medium[^1](_Medium_ performance level barriers are the highest level typical barrier referenced in Australian Bridge codes (currently AS 5100-2017). These barriers apply to bridges over rail lines, major waterways and major roads. Essentially all the high-risk bridges that are accessible to the public. Bridge barriers for say, mining vehicles, would require a separate assessment and get the performance class _Special_.) performance barrier with a stitch pour to tie it to the deck.
+The bridge will carry two lanes of a local road and a shared path. The road will have one cross fall, the shared path will have another - they'll meet at the kerb. On each side, we'll have a precast Medium[^1] performance barrier with a stitch pour to tie it to the deck.
 
 ### Setting up the grillage geometry
 Before we get started, we need some more specifics, mainly from the road alignment team. Before we even start modelling, we need to do some calculations and digging to determine our geometry.
@@ -29,7 +29,54 @@ CF_road = 0.03      # cross fall for the road, as decimal
 CF_sup = 0.025      # cross fall for the shared user path, as decimal
 ~~~
 
+Taking into account the cross falls, we can determine the overall bridge width
+~~~
+import numpy as np
+
+B_road_total = (B_road + B_barrier) / np.cos(np.atan(CF_road))
+B_sup_total = (B_sup + B_barrier) / np.cos(np.atan(CF_sup))
+B_total = B_road_total + B_sup_total
+
+>>> B_total
+10.804
+~~~
+
+Now making some choices on the number of girders for each portion of the bridge, and the space between each girder, we can get lateral coordinates for each girder.
+
+Note that we want to explicitly define the number of girders for **both** the road portion and shared path portion because there are two different cross falls. This means we'd like to place the girders at that same cross fall, and as such the girder spacings under each portion will be slightly different.
+~~~
+gap = 30        # gap between each girder
+n_road = 3      # number of girders for the road bridge
+n_sup = 2       # number of girders for the shared path
+~~~
+
+Now calculating the girder flange width and spacing of the girders:
+~~~
+# Note that we'll minus half a girder here because the two bridges sides will "share" a gap between each girder.
+flange_road = ((B_road_total * 1000) - ((n_road - 0.5) * gap)) / n_road
+flange_sup = ((B_sup_total * 1000) - ((n_sup - 0.5) * gap)) / n_sup
+
+space_road = flange_road + gap
+space_sup = flange_sup + gap
+~~~
+
+That all makes sense in code, but really, a table would help us to visualise what's going on. Here's one I prepared earlier:
+
+| Element | Z coordinate |
+| :------ | :------ |
+| Edge 1 | 0 |
+| Girder 1 | 1.089 |
+| Girder 2 | 3.297 |
+| Girder 3 | 5.471 |
+| Girder 4 | 7.610 |
+| Girder 5 | 9.749 |
+| Edge 2 | 10.804 |
+
+
 We can now determine the geometry of the deck
 
 Here's an image!
 ![Super T](/assets/img/path.jpg)
+
+
+[^1]: **Medium** performance level barriers are the highest level typical barrier referenced in Australian Bridge codes (currently AS 5100-2017). These barriers apply to bridges over rail lines, major waterways and major roads. Essentially all the high-risk bridges that are accessible to the public. Bridge barriers for say, mining vehicles, would require a separate assessment and get the performance class **Special**.
