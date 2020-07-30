@@ -15,9 +15,10 @@ To illustrate this, I'll run through a recent example of a Super T road bridge. 
 
 The abutments are reinforced concrete headstocks sitting on reinforced concrete piles. The pier is a blade wall and is made integral with the deck by way of a cast-in-situ stitch pour after the girders are placed and deck is cast.
 
-The bridge will carry two lanes of a local road and a shared path. The road will have one cross fall, the shared path will have another - they'll meet at the kerb. On each side, we'll have a precast Medium[^1] performance barrier with a stitch pour to tie it to the deck.
+The bridge will carry two lanes of a local road and a shared path. The road will have one cross fall, the shared path will have another - they'll meet at the kerb. On each side, we'll have a precast Medium[^1] performance barrier with a stitch pour to tie it to the deck. It has zero skew.
 
 ### Setting up the grillage geometry
+#### Lateral geometry
 Before we get started, we need some more specifics, mainly from the road alignment team. Before we even start modelling, we need to do some calculations and digging to determine our geometry.
 
 Picking up the phone, I find out the following:
@@ -58,9 +59,14 @@ flange_sup = ((B_sup_total * 1000) - ((n_sup - 0.5) * gap)) / n_sup
 
 space_road = flange_road + gap
 space_sup = flange_sup + gap
+
+>>> flange_road, flange_sup
+2109, 2178
 ~~~
 
-That all makes sense in code, but really, a table would help us to visualise what's going on. Here's one I prepared earlier:
+It's important to check that our flange widths are within range of what we'd expect for a Super T. Precast manufacturers typically have a minimum and maximum range they can go to, so we want to make sure this number is sensible. Here, we get values of `2109` and `2178` which are right about where we'd want them.
+
+That all makes sense in code, but really, a table would help us to visualise what's going on. The fact that our bridge has 0 skew also makes things nice and simple. Here's one I prepared earlier:
 
 | Element | Z coordinate |
 | :------ | :------ |
@@ -72,11 +78,23 @@ That all makes sense in code, but really, a table would help us to visualise wha
 | Girder 5 | 9.749 |
 | Edge 2 | 10.804 |
 
+#### Longitudinal geometry
+Going back to my phone conversation from earlier, we need the span lengths.
+~~~
+L1 = 30         # length of span 1 in metres
+L2 = 33         # length of span 2 in metres
+~~~
 
-We can now determine the geometry of the deck
+Now that we have the span lengths, we need to determine an appropriate spacing for the transverse grillage members. This part is trickier than before. Whereas previously we were modelling the **actual** positions of the girders, now we are idealising a continuous slab into a series of discrete beam elements.
 
-Here's an image!
-![Super T](/assets/img/path.jpg)
+Fortunately, Hambly, in [his book _Bridge Deck Behaviour_][hambly] (affectionately referred to as "The Bible" by many of my colleagues) has some guidance for us:
+^ The spacing of transverse members should be sufficiently small for loads distributed along longitudinal members to be represented with reasonable accuracy by a number of point loads, i.e. spacing less than about 1/4 of the effective span. In regions of sudden change such as over an internal support, a closer spacing is necessary.
+
+He then goes on to say:
+^ The transverse and longitudinal member spacings should be reasonably similar to permit sensible statical distribution of loads.
+
 
 
 [^1]: **Medium** performance level barriers are the highest level typical barrier referenced in Australian Bridge codes (currently AS 5100-2017). These barriers apply to bridges over rail lines, major waterways and major roads. Essentially all the high-risk bridges that are accessible to the public. Bridge barriers for say, mining vehicles, would require a separate assessment and get the performance class **Special**.
+
+[hambly]: https://www.amazon.com/Bridge-Deck-Behaviour-C-Hambly/dp/0419172602
