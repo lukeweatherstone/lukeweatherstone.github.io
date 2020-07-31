@@ -21,8 +21,10 @@ The bridge will carry two lanes of a local road and a shared path. The road will
 
 Because we're using Super Ts, and because we have an integral stitch pour, the construction staging is critical to the correct design of this bridge. Here, we're only looking at the actions on the bridge in its **final** configuration - that is, once it is open for design traffic. Other configurations will need to be considered separately.[^2]
 
+### Coordinate system
+
+
 ### Setting up the grillage geometry
-#### Lateral geometry
 Before we get started, we need some more specifics, mainly from the road alignment team. Before we even start modelling, we need to do some calculations and digging to determine our geometry.
 
 Picking up the phone, I find out the following:
@@ -83,7 +85,6 @@ That all makes sense in code, but really, a table would help us to visualise wha
 | Edge 2 | 10.804 |
 
 
-#### Longitudinal geometry
 Going back to my phone conversation from earlier, we need the span lengths.
 ~~~
 L1 = 30         # length of span 1 in metres
@@ -115,6 +116,7 @@ n_trans2 = L2 / sp_trans2
 We're not too concerned with the detail over the support, so we'll keep these spacings consistent for each of the spans.
 
 With the above properties in mind, we can now input the grillage elements to your finite element analysis program of choice. (For what it's worth, I'm using SPACE GASS here)
+
 ![Plan view of grillage members](/assets/img/grillage_plan.png)
 
 A few things to note in the above. The green elements are the longitudinal members (our composite Super T girders). The blue elements are the transverse members (our slab). The pink elements are the edge of the deck - these will have a negligible stiffness, but we need them for load application. The red elements represent the cross girders and integral stitch.
@@ -123,16 +125,89 @@ A few things to note in the above. The green elements are the longitudinal membe
 While we have all of our main elements input, we can be a little more exact and give this bridge some more capacity. To do this, we're going to add some stiff outriggers.
 
 We'll get to sizing the Super T girders shortly, but at the moment, our idealised cross section looks something like this:
+
 ![Idealised grillage cross section - simple](/assets/img/grillage_cs_simple.png)
 
 The green circles are a beam element with properties for the composite girder. The blue lines are the transverse slab elements. The problem here is the slab. It's spanning between the girder centroid, but really, it is supported by the girder webs.
 
 Here we'll add our stiff outriggers, shown in orange:
 
+![Idealised grillage cross section with outriggers](/assets/img/grillage_cs_outriggers.png)
+
+The outriggers are used to transfer the loads between the slab and the longitudinal beam. They have moment releases at their outer ends so they do not stiffen the slab. The slab passes over the longitudinal girder and is supported by the joints at the ends of the outriggers. I've shown a dashed line here so you can see the slab - this is not an offset.
+
+Our grillage model now looks like the below in isometric view:
+
+![Isometric view of grillage with outriggers added](/assets/img/grillage_iso_outriggers.png)
+
+### Restraint conditions
+For this model we're only really concerned with the vertical actions on the deck itself, so we'll keep things 2D and restrain the girders at the abutments and the pier. At the abutments the girders sit on laminated elastomeric bearings and at the pier the girders are integral (as mentioned before)
+
+![Isometric view of grillage model with restraints added](/assets/img/grillage_iso_restraints.png)
+
+### Section properties
+Now we have these beam elements, we need to select appropriate section and material properties for each one. 
+
+For the longitudinal members, we'll adopt the composite section properties. Important values here are the area (`A`), torsion constant (`J`) and second moments of area (`Iy` and `Iz`).
+
+To be particular, we'll assign slightly different properties to the two girder widths we have. The area and second moments of area we can calculate by hand or using a variety of different methods ([Green's theorem](https://tutorial.math.lamar.edu/Classes/CalcIII/GreensTheorem.aspx) is a fancy one I learnt the other day).
+
+When calculating these properties, we also need to appropriately adjust the composite slab for the modular ratio. In this case, we have 40 MPa concrete in the slab and 50 MPa concrete in the girder.
+
+~~~
+E_gir = 34800                       # elastic modulus of the girder in MPa
+E_slab = 32800                      # elastic modulus of the slab in MPa
+eta = E_slab / E_gir                # modular ratio of the slab and girder
+
+B_slab_road = flange_road * eta     # new width of the slabs
+B_slab_sup = flange_sup * eta
+
+>>> B_slab_road, B_slab_sup
+1988, 2053
+~~~
+
+We can now calculate most of our section properties
+
+| Girder | Flange width (mm) | Area (mm2) | Iy (mm4) | Iz (mm4) |
+| :------ | :------ | :------ | :------ |
+| "Road" girder | 2109 | 1.01e6 | 2.721e11 | 3.709e11 |
+| "Shared path" girder | 2178 | 1.03e6 | 2.949e11 | 3.756e11 |
+
+The torsion constant is a bit trickier though. 
+
+#### Torsional modulus
+There are no general rules for the derivation of the torsion modulus or for the analysis of torsional shear stress distribution. For solid beams and complex sections, the torsion constant can be calculated by using Prandtl's membrane analogy and the finite difference method.[^3] This is the method adopted by commercial software packages like Strand7 and Autodesk Structural Bridge Design (SBD) which can calculate these values for you.
+
+For a thin-walled hollow section (which is essentially what we'll have in the composite state), the torsion constant can be approximated by:
+
+![Torsion equation for a thin-walled hollow section](/assets/img/torsion_thin_wall.png)
+
+Where $A$ is the area enclosed by the centreline of the walls and 
+
+There are some approximations out there, but to determine it more accurately we need a finite element analysis. The Australian bridge code for concrete (AS 5100.5-2017 at time of writing) also provides some guidance in Appendix D4.
+
+> * Torsional moduli... are based on elastic theory and are equivalent to the Saint Venant's torsional constants.
+> * The value of torsional moulus for a composite section is the torsional modulus for the girder plus the slab together with **the junction effect between the girder and the cast-in-place slab**. NOTE: The contribution from the cast-in-place deck slab is reduced to one half of the full amount because the continuity of the slab removes the effect of the vertical shear stresses that would otherwise be present at the free ends of the slab.
+> * Values are given for modular ratios of 0.7 to 1.0 where alpha is the modular ratio factor of the cast-in-place concrete to the precast beam concrete in the composite member. Intermediate values may be interpolated.
+> * The full torsional moduli are suitable for determining distribution of forces at applied loads only, that is, **while the section is uncracked**. At ultimate load, considerable reduction in the torsional stiffness may occur and the effect of using a torsional modulus equal to **20% of the full value** should be taken into consideration.
+
+
+While we're here, let's look at a few different methods for calculating the torsional modulus and compare them.
+* J1: Calculated in Strand7 with the slab adjusted for the modular ratio
+* J2: Calculated in Strand7 for the girder and slab (with reduced width) separately, then combining as per the code conditions above, but an alpha factor of 1.0 (because we reduced the width of the slab)
+* J3: Calculated in Strand7 for the girder and slab (full width) separately, then combining as per the code conditions above with an appropriate alpha factor
+* J4: Calculated in Autodesk Structural Bridge Design (SBD) combined
+* J5: Calculated in SBD separately then combined using half the slab value
+* J6: Reference value from Table D4(B)(1) of AS 5100.5-2017 as a comparison
+
+| Girder | Flange width (mm) | J1 (mm4) | J2 (mm4) | J3 (mm4) | J4 (mm4) | J5 (mm4) | J6 (mm4) |
+| :------ | :------ | :------ | :------ | :------ | :------ | :------ | :------ |
+| "Road" girder | 2109 |  | |  | 9.88e10 | 8.95e9 | 2.21e11 |
+| "Shared path" girder | 2178 |  |  | 1.97e11 | 9.05e9 |
 
 [^1]: **Medium** performance level barriers are the highest level typical barrier referenced in Australian Bridge codes (currently AS 5100-2017). These barriers apply to bridges over rail lines, major waterways and major roads. Essentially all the high-risk bridges that are accessible to the public. Bridge barriers for say, mining vehicles, would require a separate assessment and get the performance class **Special**.
 
-[^2]: For the sake of completeness, here's what I'm thinking the construction staging for this bridge would look like:  
+[^2]: For the sake of completeness, here's what I'm thinking the construction staging for this bridge would look like:
     1. Carry out excavations
     2. Construct piled fondations
     3. Construct pier foundation, pier blade wall, abutment headstock and wingwalls
@@ -145,5 +220,7 @@ Here we'll add our stiff outriggers, shown in orange:
     10. Construct footway slab and kerb
     11. Construct approach slab and barriers
     12. Install approach pavements and surfacing on bridge deck
+
+[^3]: The membrane analogy takes advantage of the similarity of the equations for the stress function for a section under torsion and the equations for the shape of an inflated soap bubble stretched over a boundary of the same shape.
 
 [hambly]: https://www.amazon.com/Bridge-Deck-Behaviour-C-Hambly/dp/0419172602

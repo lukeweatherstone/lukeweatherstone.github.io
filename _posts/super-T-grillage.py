@@ -21,13 +21,11 @@ flange_sup = ((B_sup_total * 1000) - ((n_sup - 0.5) * gap)) / n_sup
 space_road = flange_road + gap
 space_sup = flange_sup + gap
 
-print(flange_road, flange_sup)
+E_gir = 34800                       # elastic modulus of the girder in MPa
+E_slab = 32800                      # elastic modulus of the slab in MPa
+eta = E_slab / E_gir                # modular ratio of the slab and girder
 
-# for n in range(n_road + n_sup):
-#     n = n + 1
-#     if n == 1:
-#         edge1 = 0
-#     if n == (n_road + n_sup):
-#         edge2 = B_total
-    
-#     offset
+B_slab_road = flange_road * eta     # new width of the slabs
+B_slab_sup = flange_sup * eta
+
+print(B_slab_road, B_slab_sup)
