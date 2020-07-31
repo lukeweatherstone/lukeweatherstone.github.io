@@ -184,6 +184,10 @@ For a thin-walled hollow section (which is essentially what we'll have in the co
 
 Where $A$ is the area enclosed by the centreline of the walls and 
 
+$$
+f(x) = mx + b
+$$
+
 There are some approximations out there, but to determine it more accurately we need a finite element analysis. The Australian bridge code for concrete (AS 5100.5-2017 at time of writing) also provides some guidance in Appendix D4.
 
 > * Torsional moduli... are based on elastic theory and are equivalent to the Saint Venant's torsional constants.
