@@ -175,39 +175,52 @@ We can now calculate most of our section properties
 
 The torsion constant is a bit trickier though. 
 
-#### Torsional modulus
-There are no general rules for the derivation of the torsion modulus or for the analysis of torsional shear stress distribution. For solid beams and complex sections, the torsion constant can be calculated by using Prandtl's membrane analogy and the finite difference method.[^3] This is the method adopted by commercial software packages like Strand7 and Autodesk Structural Bridge Design (SBD) which can calculate these values for you.
+#### Torsion constant
+There are no general rules for the derivation of the torsion modulus or for the analysis of torsional shear stress distribution.
+
+For solid beams and complex sections, the torsion constant can be calculated by using Prandtl's membrane analogy and the finite difference method.[^3] This is the method adopted by commercial software packages like Strand7 and Autodesk Structural Bridge Design (SBD) which can calculate these values for you.
 
 For a thin-walled hollow section (which is essentially what we'll have in the composite state), the torsion constant can be approximated by:
 
-![Torsion equation for a thin-walled hollow section](/assets/img/torsion_thin_wall.png)
-
-Where $A$ is the area enclosed by the centreline of the walls and 
-
 $$
-f(x) = mx + b
+C = \frac{4A^2}{\oint \frac{ds}{t}}
 $$
 
-There are some approximations out there, but to determine it more accurately we need a finite element analysis. The Australian bridge code for concrete (AS 5100.5-2017 at time of writing) also provides some guidance in Appendix D4.
+Where $A$ is the area enclosed by the centreline of the walls and $\oint \frac{ds}{t}$ is the sum of the lengths of each wall side divided by its thickness.
 
-> * Torsional moduli... are based on elastic theory and are equivalent to the Saint Venant's torsional constants.
-> * The value of torsional moulus for a composite section is the torsional modulus for the girder plus the slab together with **the junction effect between the girder and the cast-in-place slab**. NOTE: The contribution from the cast-in-place deck slab is reduced to one half of the full amount because the continuity of the slab removes the effect of the vertical shear stresses that would otherwise be present at the free ends of the slab.
-> * Values are given for modular ratios of 0.7 to 1.0 where alpha is the modular ratio factor of the cast-in-place concrete to the precast beam concrete in the composite member. Intermediate values may be interpolated.
-> * The full torsional moduli are suitable for determining distribution of forces at applied loads only, that is, **while the section is uncracked**. At ultimate load, considerable reduction in the torsional stiffness may occur and the effect of using a torsional modulus equal to **20% of the full value** should be taken into consideration.
+In our case:
 
+[img]
 
-While we're here, let's look at a few different methods for calculating the torsional modulus and compare them.
-* J1: Calculated in Strand7 with the slab adjusted for the modular ratio
-* J2: Calculated in Strand7 for the girder and slab (with reduced width) separately, then combining as per the code conditions above, but an alpha factor of 1.0 (because we reduced the width of the slab)
-* J3: Calculated in Strand7 for the girder and slab (full width) separately, then combining as per the code conditions above with an appropriate alpha factor
-* J4: Calculated in Autodesk Structural Bridge Design (SBD) combined
-* J5: Calculated in SBD separately then combined using half the slab value
-* J6: Reference value from Table D4(B)(1) of AS 5100.5-2017 as a comparison
+The Australian Standards provide some guidance in the bridge code, but honestly, I find it a little confusing. The above approach is complex, but it makes sense.
 
-| Girder | Flange width (mm) | J1 (mm4) | J2 (mm4) | J3 (mm4) | J4 (mm4) | J5 (mm4) | J6 (mm4) |
-| :------ | :------ | :------ | :------ | :------ | :------ | :------ | :------ |
-| "Road" girder | 2109 |  | |  | 9.88e10 | 8.95e9 | 2.21e11 |
-| "Shared path" girder | 2178 |  |  | 1.97e11 | 9.05e9 |
+To compare, we'll calculate a few different values of the torsion constant and compare them with each other.
+
+J1
+: Calculated using the thin-walled approximation equation above, using the full slab thickness
+
+J2
+: Calculated in Strand7 with gross section properties for the slab
+
+J3
+: Calculated in Strand7 with gross section properties and then an adjustment for the modular ratio in line with the Australian Standards Table D4(B)(1)
+
+J4
+: Calculated in Strand7 with a reduced **width** for the modular ratio
+
+J5
+: Calculated in Strand7 with a reduced **thickness** for the modular ratio
+
+J6
+: Calculated in Autodesk Structural Bridge Design
+
+J7
+: Reference value for a 1500 deep Super T girder 2100 wide from Table D4(B)(1) of As 5100.5-2017
+
+| Girder | Flange width (mm) | J1 (mm4) | J2 (mm4) | J3 (mm4) | J4 (mm4) | J5 (mm4) | J6 (mm4) | J7 (mm4)
+| :------ | :------ | :------ | :------ | :------ | :------ | :------ | :------ | :------ |
+| "Road" girder | 2109 | 2.00e11 |
+| "Shared path" girder | 2178 | 2.00e11 |
 
 [^1]: **Medium** performance level barriers are the highest level typical barrier referenced in Australian Bridge codes (currently AS 5100-2017). These barriers apply to bridges over rail lines, major waterways and major roads. Essentially all the high-risk bridges that are accessible to the public. Bridge barriers for say, mining vehicles, would require a separate assessment and get the performance class **Special**.
 
